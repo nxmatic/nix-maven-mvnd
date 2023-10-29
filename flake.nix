@@ -15,8 +15,8 @@
   in utils.lib.eachSystem utils.lib.defaultSystems (system: rec {
     legacyPackages = pkgsForSystem system;
     packages = utils.lib.flattenTree {
-      inherit (legacyPackages) maven-mvnd;
+      inherit (legacyPackages) maven-mvnd-m39;
     };
-    defaultPackage = legacyPackages.maven-mvnd;
+    defaultPackage = legacyPackages.maven-mvnd-m39;
   });
 }

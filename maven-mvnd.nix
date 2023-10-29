@@ -1,4 +1,6 @@
-{ pkgs, lib, stdenv
+{
+  mavenVersion
+, pkgs, lib, stdenv
 , fetchFromGitHub, buildMavenRepositoryFromLockFile
 , makeWrapper, maven, jdk11_headless, rsync
 , nix-gitignore
@@ -7,9 +9,17 @@
 let
   mavenRepository = buildMavenRepositoryFromLockFile { file = ./mvn2nix-lock.json; };
 in stdenv.mkDerivation rec {
-  pname = "maven-mvnd";
+  pname = "maven-mvnd-${mavenVersion}";
   version = "1.0-m8";
   name = "${pname}-${version}";
+
+  meta = with lib; {
+    description = "The maven daemon based on ${mavenVersion}.";
+    conflicts = lib.optional stdenv.isLinux [
+      "maven-mvnd-m39"
+      "maven-mvnd-m40"      
+    ];
+  };
 
   src = fetchFromGitHub { 
     owner = "apache";
@@ -55,10 +65,8 @@ in stdenv.mkDerivation rec {
     version=${version}
 
     # copy out the distribution
-    mkdir -p $out/m39 &&
-        rsync -av "dist-m39/target/maven-mvnd-$version-m39-$system-$arch/" $out/m39
-    mkdir -p $out/m40 &&
-        rsync -av "dist-m40/target/maven-mvnd-$version-m40-$system-$arch/" $out/m40
+    mkdir -p $out
+    rsync -av "dist-${mavenVersion}/target/maven-mvnd-$version-${mavenVersion}-$system-$arch/" $out
 
     # create a wrapper that will automatically set the classpath
     # this should be the paths from the dependency derivation
