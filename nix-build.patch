@@ -1,0 +1,31 @@
+commit 14e0f3fca11a0233c6328336fcf893a91ebca5e3
+Author: Stephane Lacoin (aka nxmatic) <stephane.lacoin@hyland.com>
+Date:   Sun Oct 29 15:31:22 2023 +0100
+
+    nix build
+
+diff --git a/client/pom.xml b/client/pom.xml
+index e152eb54..1aa48508 100644
+--- a/client/pom.xml
++++ b/client/pom.xml
+@@ -107,6 +107,7 @@
+         <artifactId>buildnumber-maven-plugin</artifactId>
+         <configuration>
+           <locale>en_US</locale>
++          <revisionOnScmFailure>${project.version}</revisionOnScmFailure>
+         </configuration>
+         <executions>
+           <execution>
+diff --git a/pom.xml b/pom.xml
+index b600ce15..b3aca690 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -378,6 +378,8 @@
+           <artifactId>apache-rat-plugin</artifactId>
+           <configuration>
+             <excludes combine.children="append">
++              <exclude>flake.*</exclude>
++              <exclude>*.nix</exclude>
+               <exclude>**/*.png</exclude>
+               <exclude>**/*.json</exclude>
+               <exclude>**/.mvn/*</exclude>
