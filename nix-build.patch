@@ -1,11 +1,353 @@
-commit 14e0f3fca11a0233c6328336fcf893a91ebca5e3
+commit b2370ccbb37d871b1d2d2dc4d8fcad1e7691d2ad
 Author: Stephane Lacoin (aka nxmatic) <stephane.lacoin@hyland.com>
 Date:   Sun Oct 29 15:31:22 2023 +0100
 
-    nix build
+    feat: [build,nix] allow building package inside nix
 
+diff --git a/.devenv/flake.lock b/.devenv/flake.lock
+new file mode 100644
+index 00000000..b8adaa80
+--- /dev/null
++++ b/.devenv/flake.lock
+@@ -0,0 +1,163 @@
++{
++  "nodes": {
++    "flake-compat": {
++      "flake": false,
++      "locked": {
++        "lastModified": 1696426674,
++        "narHash": "sha256-kvjfFW7WAETZlt09AgDn1MrtKzP7t90Vf7vypd3OL1U=",
++        "owner": "edolstra",
++        "repo": "flake-compat",
++        "rev": "0f9255e01c2351cc7d116c072cb317785dd33b33",
++        "type": "github"
++      },
++      "original": {
++        "owner": "edolstra",
++        "repo": "flake-compat",
++        "type": "github"
++      }
++    },
++    "flake-utils": {
++      "inputs": {
++        "systems": "systems"
++      },
++      "locked": {
++        "lastModified": 1694529238,
++        "narHash": "sha256-zsNZZGTGnMOf9YpHKJqMSsa0dXbfmxeoJ7xHlrt+xmY=",
++        "owner": "numtide",
++        "repo": "flake-utils",
++        "rev": "ff7b65b44d01cf9ba6a71320833626af21126384",
++        "type": "github"
++      },
++      "original": {
++        "owner": "numtide",
++        "repo": "flake-utils",
++        "type": "github"
++      }
++    },
++    "mvn2nix": {
++      "inputs": {
++        "nixpkgs": "nixpkgs",
++        "utils": "utils"
++      },
++      "locked": {
++        "lastModified": 1629170129,
++        "narHash": "sha256-v/HvYqzkPaGin1ujo+Fi59wXC9vWxW3lYVSwElORRi8=",
++        "owner": "fzakaria",
++        "repo": "mvn2nix",
++        "rev": "ea21cfe97069feee55fa307ca9b125616c1fa84f",
++        "type": "github"
++      },
++      "original": {
++        "owner": "fzakaria",
++        "repo": "mvn2nix",
++        "type": "github"
++      }
++    },
++    "nixpkgs": {
++      "locked": {
++        "lastModified": 1625176478,
++        "narHash": "sha256-s1RTYNKw7ySyqrZjns9Cq+Nnjpp75ePgL06pgcbIpoA=",
++        "owner": "NixOS",
++        "repo": "nixpkgs",
++        "rev": "21b696caf392ad6fa513caf3327d0aa0430ffb72",
++        "type": "github"
++      },
++      "original": {
++        "owner": "NixOS",
++        "ref": "nixos-21.05",
++        "repo": "nixpkgs",
++        "type": "github"
++      }
++    },
++    "nixpkgs-master": {
++      "locked": {
++        "lastModified": 1698686682,
++        "narHash": "sha256-9vxEJBXMXSclTLMyZ0ZY7Ql5KjEqcQEGOrX1y5uiI3Y=",
++        "owner": "NixOS",
++        "repo": "nixpkgs",
++        "rev": "fe1e9d524b7ac9fac5f8be3ea2a7d177a5a4b4dc",
++        "type": "github"
++      },
++      "original": {
++        "owner": "NixOS",
++        "ref": "master",
++        "repo": "nixpkgs",
++        "type": "github"
++      }
++    },
++    "nixpkgs-stable": {
++      "locked": {
++        "lastModified": 1698562188,
++        "narHash": "sha256-9nkxGnA/T+jLhHAMFRW157Qi/zfbf5dF1q7HfKROl3o=",
++        "owner": "NixOS",
++        "repo": "nixpkgs",
++        "rev": "3e10c80821dedb93592682379f476745f370a58e",
++        "type": "github"
++      },
++      "original": {
++        "owner": "NixOS",
++        "ref": "nixpkgs-23.05-darwin",
++        "repo": "nixpkgs",
++        "type": "github"
++      }
++    },
++    "nixpkgs-unstable": {
++      "locked": {
++        "lastModified": 1698553279,
++        "narHash": "sha256-T/9P8yBSLcqo/v+FTOBK+0rjzjPMctVymZydbvR/Fak=",
++        "owner": "nixos",
++        "repo": "nixpkgs",
++        "rev": "90e85bc7c1a6fc0760a94ace129d3a1c61c3d035",
++        "type": "github"
++      },
++      "original": {
++        "owner": "nixos",
++        "ref": "nixpkgs-unstable",
++        "repo": "nixpkgs",
++        "type": "github"
++      }
++    },
++    "root": {
++      "inputs": {
++        "flake-compat": "flake-compat",
++        "flake-utils": "flake-utils",
++        "mvn2nix": "mvn2nix",
++        "nixpkgs-master": "nixpkgs-master",
++        "nixpkgs-stable": "nixpkgs-stable",
++        "nixpkgs-unstable": "nixpkgs-unstable"
++      }
++    },
++    "systems": {
++      "locked": {
++        "lastModified": 1681028828,
++        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
++        "owner": "nix-systems",
++        "repo": "default",
++        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
++        "type": "github"
++      },
++      "original": {
++        "owner": "nix-systems",
++        "repo": "default",
++        "type": "github"
++      }
++    },
++    "utils": {
++      "locked": {
++        "lastModified": 1623875721,
++        "narHash": "sha256-A8BU7bjS5GirpAUv4QA+QnJ4CceLHkcXdRp4xITDB0s=",
++        "owner": "numtide",
++        "repo": "flake-utils",
++        "rev": "f7e004a55b120c02ecb6219596820fcd32ca8772",
++        "type": "github"
++      },
++      "original": {
++        "owner": "numtide",
++        "repo": "flake-utils",
++        "type": "github"
++      }
++    }
++  },
++  "root": "root",
++  "version": 7
++}
+diff --git a/.devenv/flake.nix b/.devenv/flake.nix
+new file mode 100644
+index 00000000..41d26c0c
+--- /dev/null
++++ b/.devenv/flake.nix
+@@ -0,0 +1,87 @@
++{
++  description = "A Nix-flake-based Java development environment";
++
++  inputs = {
++    # Package sets
++    nixpkgs-master.url = "github:NixOS/nixpkgs/master";
++    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixpkgs-23.05-darwin";
++    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
++
++    # Flake utilities
++    flake-compat = { url = "github:edolstra/flake-compat"; flake = false; };
++    flake-utils.url = "github:numtide/flake-utils";
++
++    # nix maven repository
++    mvn2nix.url = "github:fzakaria/mvn2nix";
++  };
++
++  outputs = { self, flake-utils, ... }@inputs:
++    let
++      inherit (self.lib) attrValues makeOverridable optionalAttrs singleton;
++
++      nixpkgsDefaults = {
++        config = {
++          allowUnfree = true;
++	        allowBroken = false;
++        };
++      };
++    in {
++      lib = inputs.nixpkgs-unstable.lib;
++
++      overlays = {
++        pkgs-master = _: prev: {
++          pkgs-release = import inputs.nixpkgs-master {
++            inherit (prev.stdenv) system;
++            inherit (nixpkgsDefaults) config;
++          };
++        };
++        pkgs-stable = _: prev: {
++          pkgs-release = import inputs.nixpkgs-stable {
++            inherit (prev.stdenv) system;
++            inherit (nixpkgsDefaults) config;
++          };
++        };
++        pkgs-unstable = _: prev: {
++          pkgs-unstable = import inputs.nixpkgs-unstable {
++            inherit (prev.stdenv) system;
++            inherit (nixpkgsDefaults) config;
++          };
++        };
++        pkgs-mvn2nix = _: prev: {
++          pkgs-mvn2nix = import inputs.mvn2nix {
++            inherit (prev.stdenv) system;
++            inherit (nixpkgsDefaults) config;
++          };
++        };
++      };
++
++    } // flake-utils.lib.eachDefaultSystem (system: {
++
++      stable-packages = import inputs.nixpkgs-stable (nixpkgsDefaults // { inherit system; });
++
++      unstable-packages = import inputs.nixpkgs-unstable (nixpkgsDefaults // { inherit system; });
++
++      mvn2nix-packages = import inputs.mvn2nix (nixpkgsDefaults // { inherit system; });
++
++      devShells = let
++        stable-pkgs = self.stable-packages.${system};
++        unstable-pkgs = self.unstable-packages.${system};
++        mvn2nix-pkgs = self.mvn2nix-packages.${system};
++      in {
++        default = stable-pkgs.mkShell {
++          packages = [
++            stable-pkgs.graalvm-ce
++            mvn2nix-pkgs.mvn2nix
++          ];
++          shellHook = ''
++            export SHELL=$(which zsh)
++            exec zsh
++          '';
++        };
++
++      };
++
++
++    });
++
++}
+diff --git a/.gitignore b/.gitignore
+index 335a899a..4a8128ab 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -31,4 +31,73 @@ nb-configuration.xml
+ .cache/
+ 
+ # https://ge.apache.org
+-.mvn/.gradle-enterprise
+\ No newline at end of file
++.mvn/.gradle-enterprise# Created by https://www.toptal.com/developers/gitignore/api/eclipse
++# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse
++
++### Eclipse ###
++.metadata
++bin/
++tmp/
++*.tmp
++*.bak
++*.swp
++*~.nib
++local.properties
++.settings/
++.loadpath
++.recommenders
++
++# External tool builders
++.externalToolBuilders/
++
++# Locally stored "Eclipse launch configurations"
++*.launch
++
++# PyDev specific (Python IDE for Eclipse)
++*.pydevproject
++
++# CDT-specific (C/C++ Development Tooling)
++.cproject
++
++# CDT- autotools
++.autotools
++
++# Java annotation processor (APT)
++.factorypath
++
++# PDT-specific (PHP Development Tools)
++.buildpath
++
++# sbteclipse plugin
++.target
++
++# Tern plugin
++.tern-project
++
++# TeXlipse plugin
++.texlipse
++
++# STS (Spring Tool Suite)
++.springBeans
++
++# Code Recommenders
++.recommenders/
++
++# Annotation Processing
++.apt_generated/
++.apt_generated_test/
++
++# Scala IDE specific (Scala & Java development for Eclipse)
++.cache-main
++.scala_dependencies
++.worksheet
++
++# Uncomment this line if you wish to ignore the project description file.
++# Typically, this file would be tracked if it contains build/dependency configurations:
++#.project
++
++### Eclipse Patch ###
++# Spring Boot Tooling
++.sts4-cache/
++
++# End of https://www.toptal.com/developers/gitignore/api/eclipse
 diff --git a/client/pom.xml b/client/pom.xml
-index e152eb54..1aa48508 100644
+index e152eb54..907620bd 100644
 --- a/client/pom.xml
 +++ b/client/pom.xml
 @@ -107,6 +107,7 @@
@@ -16,15 +358,42 @@ index e152eb54..1aa48508 100644
          </configuration>
          <executions>
            <execution>
+@@ -209,6 +210,12 @@
+ 
+     <profile>
+       <id>native</id>
++      <activation>
++        <property>
++          <name>java.vendor.url</name>
++          <value>https://www.graalvm.org/</value>
++        </property>
++      </activation>
+       <build>
+         <plugins>
+           <plugin>
+@@ -216,9 +223,12 @@
+             <artifactId>native-maven-plugin</artifactId>
+             <configuration>
+               <skip>false</skip>
++              <debug>true</debug>
+               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
+               <imageName>mvnd</imageName>
+               <buildArgs>--no-server
++	                 --verbose
++	                 --native-compiler-path=/usr/bin/cc
+                          --no-fallback
+                          --allow-incomplete-classpath
+                          ${graalvm-native-static-opt}
 diff --git a/pom.xml b/pom.xml
-index b600ce15..b3aca690 100644
+index b600ce15..00d4b301 100644
 --- a/pom.xml
 +++ b/pom.xml
-@@ -378,6 +378,8 @@
+@@ -378,6 +378,9 @@
            <artifactId>apache-rat-plugin</artifactId>
            <configuration>
              <excludes combine.children="append">
-+              <exclude>flake.*</exclude>
++              <exclude>.envrc</exclude>
++              <exclude>.devenv/**</exclude>
 +              <exclude>*.nix</exclude>
                <exclude>**/*.png</exclude>
                <exclude>**/*.json</exclude>

@@ -5,7 +5,7 @@
     utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { nixpkgs, mvn2nix, utils, ... }:
+  outputs = { nixpkgs, mvn2nix, utils, ... }@inputs:
   let
     pkgsForSystem = system: import nixpkgs {
       # ./overlay.nix contains the logic to package local repository
