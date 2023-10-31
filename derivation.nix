@@ -2,8 +2,9 @@
   mavenVersion, system
 , pkgs, lib, stdenv
 , fetchFromGitHub, buildMavenRepositoryFromLockFile
-, makeWrapper, maven, jdk11_headless, rsync
-, nix-gitignore
+, nix-gitignore, makeWrapper
+, coreutils, rsync
+, graalvm-ce, maven
 }:
 
 let
@@ -40,19 +41,18 @@ in stdenv.mkDerivation rec {
     ./nix-build.patch
   ];
 
-  nativeBuildInputs = [ jdk11_headless maven makeWrapper rsync ];
+  nativeBuildInputs = [ graalvm-ce maven makeWrapper rsync ];
 
   buildInputs = [
-    graalvm
     coreutils
   ];
 
   buildPhase = ''
     echo "Patching maven build for nix"
+
     patch -p0 $patches/nix-build.patch
 
     echo "Building with maven repository ${mavenRepository}"
-
 
     mkdir -p "${binDir}"
 
@@ -66,34 +66,29 @@ in stdenv.mkDerivation rec {
     export JAVA_HOME=${graalvm};
     export PATH=${binDir}:$PATH
 
-    cc -v
     ./mvnw package -DskipTests -Dmaven.repo.local=${mavenRepository}
   '';
 
-  installPhase = ''
-
   installPhase = let
-    system-parts = lib.strings.splitString "-" system;
-    arch = system-parts.[0];
-    os = system-parts.[1];
+    dollar = "$";
   in ''
-    set -ex
+    # extract the os and arch
+    system="${system}"
+    arch="${dollar}{system%%-*}"
+    os="${dollar}{system##*-}"
 
-
-    # which dist I'm building
-    system="$( system )"
-    arch="$( arch )"
-    version=${version}
+    dist="dist-${mavenVersion}/target/maven-mvnd-${version}-${mavenVersion}-$os-$arch"
 
     # copy out the distribution
     mkdir -p $out
-    rsync -av "dist-${mavenVersion}/target/maven-mvnd-$version-${mavenVersion}-$system-$arch/" $out
+    rsync -av "$dist/." $out
 
-    addToSearchPath PATH $out/bin
+    # create wrappers
+    typeset -a wrapperArgs=( )
+    wrapperArgs+=( --prefix 'PATH' ':' '${lib.makeBinPath [ graalvm coreutils ]}' )
+    wrapperArgs+=( --set JAVA_HOME $JAVA_HOME )
 
-    # create a wrapper that will automatically set the classpath
-    # this should be the paths from the dependency derivation
-    # makeWrapper ${jdk11_headless}/bin/java $out/bin/${pname} \
-    #      --add-flags "-jar $out/${name}.jar"
+    wrapProgram $out/bin/mvnd "${dollar}{wrapperArgs[@]}"
+    wrapProgram $out/bin/mvnd.sh "${dollar}{wrapperArgs[@]}"
   '';
 }
