@@ -47,12 +47,6 @@ in stdenv.mkDerivation rec {
   ];
 
   buildPhase = ''
-    echo "Patching maven build for nix"
-
-    patch -p0 $patches/nix-build.patch
-
-    echo "Building with maven repository ${mavenRepository}"
-
     mkdir -p "${binDir}"
 
     export CC=${binDir}/cc
