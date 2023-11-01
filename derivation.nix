@@ -4,14 +4,11 @@
 , fetchFromGitHub, buildMavenRepositoryFromLockFile
 , nix-gitignore, makeWrapper
 , coreutils, rsync
-, graalvm-ce, maven
+, graalvm, jdk11,  maven
 }:
 
 let
   mavenRepository = buildMavenRepositoryFromLockFile { file = ./mvn2nix-lock.json; };
-
-  graalvm = pkgs.graalvm-ce;
-  coreutils = pkgs.coreutils;
 
   binDir = "target/bin";
 
@@ -40,7 +37,7 @@ in stdenv.mkDerivation rec {
     ./nix-build.patch
   ];
 
-  nativeBuildInputs = [ graalvm-ce maven makeWrapper rsync ];
+  nativeBuildInputs = [ graalvm maven makeWrapper rsync ];
 
   buildInputs = [
     coreutils
@@ -56,7 +53,7 @@ in stdenv.mkDerivation rec {
     ln -s /usr/bin/cc $CC
     ln -s /usr/bin/clang $CLANG
 
-    export JAVA_HOME=${graalvm};
+    export JAVA_HOME=${pkgs.graalvm-ce};
     export PATH=${binDir}:$PATH
 
     ./mvnw package -DskipTests -Dmaven.repo.local=${mavenRepository}
@@ -78,8 +75,8 @@ in stdenv.mkDerivation rec {
 
     # create wrappers
     typeset -a wrapperArgs=( )
-    wrapperArgs+=( --prefix 'PATH' ':' '${lib.makeBinPath [ graalvm coreutils ]}' )
-    wrapperArgs+=( --set JAVA_HOME $JAVA_HOME )
+    wrapperArgs+=( --prefix 'PATH' ':' '${lib.makeBinPath [ jdk11 coreutils ]}' )
+    wrapperArgs+=( --set JAVA_HOME ${pkgs.jdk11} )
 
     wrapProgram $out/bin/mvnd "${dollar}{wrapperArgs[@]}"
     wrapProgram $out/bin/mvnd.sh "${dollar}{wrapperArgs[@]}"
