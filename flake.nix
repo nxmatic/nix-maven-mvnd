@@ -16,6 +16,7 @@
     legacyPackages = pkgsForSystem system;
     packages = utils.lib.flattenTree {
       inherit (legacyPackages) maven-mvnd-m39;
+      inherit (legacyPackages) maven-mvnd-m40;
     };
     defaultPackage = legacyPackages.maven-mvnd-m39;
   });
