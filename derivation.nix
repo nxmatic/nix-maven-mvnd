@@ -19,8 +19,7 @@ in stdenv.mkDerivation rec {
 
   version = "1.0-m8";
   
-  pname = "maven-mvnd-${mavenVersion}";
-  name = "${pname}-${version}-${system}";
+  name = "maven-mvnd-${mavenVersion}";
 
   meta = with lib; {
     description = "The maven daemon based on ${mavenVersion}.";
