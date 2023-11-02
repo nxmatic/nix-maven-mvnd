@@ -34,7 +34,8 @@ in stdenv.mkDerivation rec {
   };
 
   patches = [
-    ./nix-build.patch
+    ./patches/00-nix-build.patch
+    ./patches/01-fix-no-daemon.patch
   ];
 
   nativeBuildInputs = [ graalvm maven makeWrapper rsync ];

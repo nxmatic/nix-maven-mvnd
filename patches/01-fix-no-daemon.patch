@@ -1,0 +1,19 @@
+commit 2788fa7b8319ef009a74d27a9e127938465d9b16
+Author: Stephane Lacoin (aka nxmatic) <stephane.lacoin@hyland.com>
+Date:   Thu Nov 2 16:30:30 2023 +0100
+
+    fixup: [debug] no daemon mode requires MVND_JAVA_HOME from Environment
+
+diff --git a/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java b/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java
+index 912a05e9..5324adfa 100644
+--- a/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java
++++ b/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java
+@@ -143,6 +143,8 @@ public class DaemonConnector {
+                 parameters.daemonStorage().toString());
+         properties.put(
+                 Environment.MVND_REGISTRY.getProperty(), parameters.registry().toString());
++        properties.put(
++                Environment.MVND_JAVA_HOME.getProperty(), parameters.javaHome().toString());
+         properties.putAll(parameters.getDaemonOptsMap());
+         Environment.setProperties(properties);
+         AtomicReference<Throwable> throwable = new AtomicReference<>();
