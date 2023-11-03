@@ -1,0 +1,111 @@
+commit 44a9f3e02ad971c15f33fe241b6d84edf441d8ed
+Author: Stephane Lacoin (aka nxmatic) <stephane.lacoin@hyland.com>
+Date:   Fri Nov 3 11:43:33 2023 +0100
+
+    feat: added daemon debug suspend parameter (easier to debug on deman)
+
+diff --git a/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java b/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java
+index 5324adfa..1e2e8729 100644
+--- a/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java
++++ b/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java
+@@ -379,35 +379,8 @@ public class DaemonConnector {
+             args.add("-classpath");
+             args.add(plexusClassworldsPath);
+             args.add("-javaagent:" + mvndAgentPath);
+-            // debug options
+-            if (parameters.property(Environment.MVND_DEBUG).asBoolean()) {
+-                String address =
+-                        parameters.property(Environment.MVND_DEBUG_ADDRESS).asString();
+-                String host;
+-                String port;
+-                int column = address.indexOf(':');
+-                if (column >= 0) {
+-                    host = address.substring(0, column);
+-                    port = address.substring(column + 1);
+-                } else {
+-                    host = "localhost";
+-                    port = address;
+-                }
+-                if (!port.matches("[0-9]+")) {
+-                    throw new IllegalArgumentException("Wrong debug address syntax: " + address);
+-                }
+-                int iPort = Integer.parseInt(port);
+-                if (iPort == 0) {
+-                    try (ServerSocketChannel channel = SocketFamily.inet.openServerSocket()) {
+-                        iPort = ((InetSocketAddress) channel.getLocalAddress()).getPort();
+-                    } catch (IOException e) {
+-                        throw new IllegalStateException("Unable to find a free debug port", e);
+-                    }
+-                }
+-                address = host + ":" + iPort;
+-                output.accept(Message.buildStatus("Daemon listening for debugger on address: " + address));
+-                args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + address);
+-            }
++            args.add(debugArgument(output));
++
+             // jvm args
+             String jvmArgs = parameters.jvmArgs();
+             if (jvmArgs != null) {
+@@ -486,6 +459,47 @@ public class DaemonConnector {
+         }
+     }
+ 
++    private String debugArgument(ClientOutput output) {
++        if (!parameters.property(Environment.MVND_DEBUG).asBoolean()) {
++            return "";
++        }
++
++        String debugOption = "-agentlib:jdwp=transport=dt_socket,server=y";
++
++        // debug address
++        String address = parameters.property(Environment.MVND_DEBUG_ADDRESS).asString();
++        String host;
++        String port;
++        int column = address.indexOf(':');
++        if (column >= 0) {
++            host = address.substring(0, column);
++            port = address.substring(column + 1);
++        } else {
++            host = "localhost";
++            port = address;
++        }
++        if (!port.matches("[0-9]+")) {
++            throw new IllegalArgumentException("Wrong debug address syntax: " + address);
++        }
++        int iPort = Integer.parseInt(port);
++        if (iPort == 0) {
++            try (ServerSocketChannel channel = SocketFamily.inet.openServerSocket()) {
++                iPort = ((InetSocketAddress) channel.getLocalAddress()).getPort();
++            } catch (IOException e) {
++                throw new IllegalStateException("Unable to find a free debug port", e);
++            }
++        }
++        address = host + ":" + iPort;
++        debugOption += ",address=" + address;
++        output.accept(Message.buildStatus("Daemon listening for debugger on address: " + address));
++
++        // suspend until debugger is attached
++        Boolean suspend = parameters.property(Environment.MVND_DEBUG_SUSPEND).asBoolean();
++        debugOption += ",suspend=" + (suspend ? "y" : "n");
++
++        return debugOption;
++    }
++
+     private float getJavaVersion() {
+         try {
+             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
+diff --git a/common/src/main/java/org/mvndaemon/mvnd/common/Environment.java b/common/src/main/java/org/mvndaemon/mvnd/common/Environment.java
+index ac0e9a6c..d709afc8 100644
+--- a/common/src/main/java/org/mvndaemon/mvnd/common/Environment.java
++++ b/common/src/main/java/org/mvndaemon/mvnd/common/Environment.java
+@@ -172,6 +172,10 @@ public enum Environment {
+      * to have <code>mvnd</code> to choose one.
+      */
+     MVND_DEBUG_ADDRESS("mvnd.debug.address", null, "8000", OptionType.STRING, Flags.DISCRIMINATING),
++    /**
++     * Suspend the server in debug mode, if <code>true</code> the server will suspend until the client connects.
++     */
++    MVND_DEBUG_SUSPEND("mvnd.debug.suspend", null, false, OptionType.BOOLEAN, Flags.DISCRIMINATING),
+     /**
+      * A time period after which an unused daemon will terminate by itself.
+      */
