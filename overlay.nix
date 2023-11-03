@@ -1,8 +1,16 @@
 self: super: {
 
-  graalvm = super.graalvm-ce;
+  maven-jdk21-graalvm = super.graalvm-ce;
   
-  jdk11 = super.zulu11;
+  maven-jdk20-temurin = super.temurin-bin-20;
+
+  maven-jdk19-temurin = super.temurin-bin-19;
+
+  maven-jdk17-zulu = super.zulu17; # nuxeo build platform
+
+  maven-jdk11-temurin = super.temurin-bin-11;
+
+  maven-jdk11-zulu = super.zulu11; # nos build platform
 
   maven-mvnd-m39 = self.callPackage ./derivation.nix {
     mavenVersion = "m39";
