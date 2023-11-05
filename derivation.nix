@@ -40,6 +40,7 @@ in stdenv.mkDerivation rec {
     ./patches/00-nix-build.patch
     ./patches/01-fix-no-daemon.patch
     ./patches/02-daemon-debug-suspend.patch
+    ./patches/03-daemon-debug-address.patch
   ];
 
   nativeBuildInputs = [ pkgs.makeWrapper pkgs.rsync pkgs.yq-go

@@ -1,0 +1,199 @@
+commit 427050e277750087bd6c03fbb5d145f3cb3c1e15
+Author: Stephane Lacoin (aka nxmatic) <stephane.lacoin@hyland.com>
+Date:   Sun Nov 5 08:55:32 2023 +0100
+
+    feat: add debug address to daemon info
+
+diff --git a/client/src/main/java-mvnd/org/mvndaemon/mvnd/client/DefaultClient.java b/client/src/main/java-mvnd/org/mvndaemon/mvnd/client/DefaultClient.java
+index ee5f9ae0..362b6068 100644
+--- a/client/src/main/java-mvnd/org/mvndaemon/mvnd/client/DefaultClient.java
++++ b/client/src/main/java-mvnd/org/mvndaemon/mvnd/client/DefaultClient.java
+@@ -276,7 +276,7 @@ public class DefaultClient implements Client {
+                                 template,
+                                 d.getId(),
+                                 d.getPid(),
+-                                d.getAddress(),
++                                d.getDaemonAddress(),
+                                 d.getState(),
+                                 OsUtils.kbToHumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
+                                 LocalDateTime.ofInstant(
+diff --git a/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java b/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java
+index 1e2e8729..8cddf18a 100644
+--- a/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java
++++ b/client/src/main/java/org/mvndaemon/mvnd/client/DaemonConnector.java
+@@ -547,7 +547,7 @@ public class DaemonConnector {
+             throws DaemonException.ConnectException {
+         LOGGER.debug("Connecting to Daemon");
+         try {
+-            DaemonConnection connection = connect(daemon.getAddress(), daemon.getToken());
++            DaemonConnection connection = connect(daemon.getDaemonAddress(), daemon.getToken());
+             return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, parameters);
+         } catch (DaemonException.ConnectException e) {
+             staleAddressDetector.maybeStaleAddress(e);
+diff --git a/common/src/main/java/org/mvndaemon/mvnd/common/DaemonInfo.java b/common/src/main/java/org/mvndaemon/mvnd/common/DaemonInfo.java
+index eb86ef45..45eb4f32 100644
+--- a/common/src/main/java/org/mvndaemon/mvnd/common/DaemonInfo.java
++++ b/common/src/main/java/org/mvndaemon/mvnd/common/DaemonInfo.java
+@@ -35,7 +35,8 @@ public class DaemonInfo {
+     private final String javaHome;
+     private final String mvndHome;
+     private final int pid;
+-    private final String address;
++    private final String daemonAddress;
++    private final String debugAddress;
+     private final byte[] token;
+     private final String locale;
+     private final List<String> options;
+@@ -48,7 +49,8 @@ public class DaemonInfo {
+             String javaHome,
+             String mavenHome,
+             int pid,
+-            String address,
++            String daemonAddress,
++            String debugAddress,
+             byte[] token,
+             String locale,
+             List<String> options,
+@@ -59,7 +61,8 @@ public class DaemonInfo {
+         this.javaHome = javaHome;
+         this.mvndHome = mavenHome;
+         this.pid = pid;
+-        this.address = address;
++        this.daemonAddress = daemonAddress;
++        this.debugAddress = debugAddress;
+         this.token = token;
+         this.locale = locale;
+         this.options = options;
+@@ -84,8 +87,12 @@ public class DaemonInfo {
+         return pid;
+     }
+ 
+-    public String getAddress() {
+-        return address;
++    public String getDaemonAddress() {
++        return daemonAddress;
++    }
++
++    public String getDebugAddress() {
++        return debugAddress;
+     }
+ 
+     public byte[] getToken() {
+@@ -124,7 +131,8 @@ public class DaemonInfo {
+             li = lastIdle;
+             lb = lastBusy;
+         }
+-        return new DaemonInfo(id, javaHome, mvndHome, pid, address, token, locale, options, state, li, lb);
++        return new DaemonInfo(
++                id, javaHome, mvndHome, pid, daemonAddress, debugAddress, token, locale, options, state, li, lb);
+     }
+ 
+     @Override
+@@ -143,8 +151,10 @@ public class DaemonInfo {
+                 .append(mvndHome)
+                 .append(", pid=")
+                 .append(pid)
+-                .append(", address=")
+-                .append(address)
++                .append(", daemonAddress=")
++                .append(daemonAddress)
++                .append(", debugAddress=")
++                .append(debugAddress)
+                 .append(", locale=")
+                 .append(locale)
+                 .append(", state=")
+diff --git a/common/src/main/java/org/mvndaemon/mvnd/common/DaemonRegistry.java b/common/src/main/java/org/mvndaemon/mvnd/common/DaemonRegistry.java
+index 120dde38..4b4baa72 100644
+--- a/common/src/main/java/org/mvndaemon/mvnd/common/DaemonRegistry.java
++++ b/common/src/main/java/org/mvndaemon/mvnd/common/DaemonRegistry.java
+@@ -196,7 +196,8 @@ public class DaemonRegistry implements AutoCloseable {
+                         String javaHome = readString();
+                         String mavenHome = readString();
+                         int pid = buffer.getInt();
+-                        String address = readString();
++                        String daemonAddress = readString();
++                        String debugAddress = readString();
+ 
+                         byte[] token = new byte[DaemonInfo.TOKEN_SIZE];
+                         buffer.get(token);
+@@ -211,7 +212,17 @@ public class DaemonRegistry implements AutoCloseable {
+                         long lastIdle = buffer.getLong();
+                         long lastBusy = buffer.getLong();
+                         DaemonInfo di = new DaemonInfo(
+-                                daemonId, javaHome, mavenHome, pid, address, token, locale, opts, state, lastIdle,
++                                daemonId,
++                                javaHome,
++                                mavenHome,
++                                pid,
++                                daemonAddress,
++                                debugAddress,
++                                token,
++                                locale,
++                                opts,
++                                state,
++                                lastIdle,
+                                 lastBusy);
+                         infosMap.putIfAbsent(di.getId(), di);
+                     }
+@@ -236,7 +247,7 @@ public class DaemonRegistry implements AutoCloseable {
+                             writeString(di.getJavaHome());
+                             writeString(di.getMvndHome());
+                             buffer.putInt(di.getPid());
+-                            writeString(di.getAddress());
++                            writeString(di.getDaemonAddress());
+                             buffer.put(di.getToken());
+                             writeString(di.getLocale());
+                             buffer.putInt(di.getOptions().size());
+diff --git a/common/src/test/java/org/mvndaemon/mvnd/common/DaemonRegistryTest.java b/common/src/test/java/org/mvndaemon/mvnd/common/DaemonRegistryTest.java
+index f6984e44..dbbf30bc 100644
+--- a/common/src/test/java/org/mvndaemon/mvnd/common/DaemonRegistryTest.java
++++ b/common/src/test/java/org/mvndaemon/mvnd/common/DaemonRegistryTest.java
+@@ -76,6 +76,7 @@ public class DaemonRegistryTest {
+                     "/data/reg/",
+                     0x12345678,
+                     "inet:/127.0.0.1:7502",
++                    "inet:/127.0.0.1:9000",
+                     token,
+                     Locale.getDefault().toLanguageTag(),
+                     Arrays.asList("-Xmx"),
+@@ -106,6 +107,7 @@ public class DaemonRegistryTest {
+                         "/data/reg/",
+                         random.nextInt(),
+                         "inet:/127.0.0.1:7502",
++                        "inet:/127.0.0.1:9000",
+                         token,
+                         Locale.getDefault().toLanguageTag(),
+                         Collections.singletonList("-Xmx"),
+@@ -149,6 +151,7 @@ public class DaemonRegistryTest {
+                     "/data/reg/",
+                     0x12345678,
+                     "inet:/127.0.0.1:7502",
++                    "inet:/127.0.0.1:9000",
+                     token,
+                     Locale.getDefault().toLanguageTag(),
+                     Arrays.asList("-Xmx"),
+diff --git a/daemon/src/main/java/org/mvndaemon/mvnd/daemon/Server.java b/daemon/src/main/java/org/mvndaemon/mvnd/daemon/Server.java
+index 6d9586cf..65f678ab 100644
+--- a/daemon/src/main/java/org/mvndaemon/mvnd/daemon/Server.java
++++ b/daemon/src/main/java/org/mvndaemon/mvnd/daemon/Server.java
+@@ -160,6 +160,7 @@ public class Server implements AutoCloseable, Runnable {
+                     Environment.MVND_HOME.asString(),
+                     DaemonRegistry.getProcessId(),
+                     SocketFamily.toString(socket.getLocalAddress()),
++                    Environment.MVND_DEBUG_ADDRESS.asString(),
+                     token,
+                     Locale.getDefault().toLanguageTag(),
+                     opts,
+diff --git a/integration-tests/src/test/java/org/mvndaemon/mvnd/it/StopStatusTest.java b/integration-tests/src/test/java/org/mvndaemon/mvnd/it/StopStatusTest.java
+index c00f5ef2..13d5f146 100644
+--- a/integration-tests/src/test/java/org/mvndaemon/mvnd/it/StopStatusTest.java
++++ b/integration-tests/src/test/java/org/mvndaemon/mvnd/it/StopStatusTest.java
+@@ -56,7 +56,7 @@ class StopStatusTest {
+             final TestClientOutput output = new TestClientOutput();
+             client.execute(output, "--status").assertSuccess();
+ 
+-            output.assertContainsMatchingSubsequence(d.getId() + " +" + d.getPid() + " +" + d.getAddress());
++            output.assertContainsMatchingSubsequence(d.getId() + " +" + d.getPid() + " +" + d.getDaemonAddress());
+         }
+         /* Wait, till the instance becomes idle */
+         registry.awaitIdle(d.getId());
