@@ -33,7 +33,7 @@ in stdenv.mkDerivation rec {
     owner = "nxmatic";
     repo = "maven-mvnd";
     rev = "develop";
-    hash = "sha256-wMqAY1qwtuDXT60VDti7+nZ2nPkpTIvePEsySpVhuRA=";
+    hash = "sha256-n54XqiH19ZQ8+MvLfZV52a/6XBwkR0g20Rc1PjLYE1c=";
   };
 
   nativeBuildInputs = [ pkgs.makeWrapper pkgs.rsync pkgs.yq-go
