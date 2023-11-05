@@ -30,18 +30,11 @@ in stdenv.mkDerivation rec {
   };
 
   src = fetchFromGitHub { 
-    owner = "apache";
+    owner = "nxmatic";
     repo = "maven-mvnd";
-    rev = "1.0-m8";
-    hash = "sha256-tC1nN81aimfA0CWQAU6J/QEXO2mmSQln+dkiB2jyqfI=";
+    rev = "develop";
+    hash = "sha256-wMqAY1qwtuDXT60VDti7+nZ2nPkpTIvePEsySpVhuRA=";
   };
-
-  patches = [
-    ./patches/00-nix-build.patch
-    ./patches/01-fix-no-daemon.patch
-    ./patches/02-daemon-debug-suspend.patch
-    ./patches/03-daemon-debug-address.patch
-  ];
 
   nativeBuildInputs = [ pkgs.makeWrapper pkgs.rsync pkgs.yq-go
                         pkgs.maven pkgs.maven-jdk21-graalvm
