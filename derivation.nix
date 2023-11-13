@@ -6,7 +6,7 @@
 , coreutils, rsync
 , maven
 , maven-jdk21-graalvm
-, maven-jdk20-temurin, maven-jdk19-temurin, maven-jdk11-temurin
+, maven-jdk21-temurin, maven-jdk20-temurin, maven-jdk19-temurin, maven-jdk11-temurin
 , maven-jdk17-zulu, maven-jdk11-zulu
 }:
 
@@ -46,6 +46,7 @@ in stdenv.mkDerivation rec {
     pkgs.maven-jdk11-zulu
     pkgs.maven-jdk19-temurin
     pkgs.maven-jdk20-temurin
+    pkgs.maven-jdk21-temurin
     pkgs.maven-jdk21-graalvm
   ];
 
@@ -115,6 +116,12 @@ in stdenv.mkDerivation rec {
             vendor: Eclipse Adoptium
           configuration:
             jdkHome: ${pkgs.maven-jdk20-temurin}
+        - type: jdk
+          provides:
+            version: "21"
+            vendor: Eclipse Adoptium
+          configuration:
+            jdkHome: ${pkgs.maven-jdk21-temurin}
         - type: jdk
           provides:
             version: "21"

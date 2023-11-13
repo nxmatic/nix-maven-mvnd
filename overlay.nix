@@ -2,6 +2,8 @@ self: super: {
 
   maven-jdk21-graalvm = super.graalvm-ce;
   
+  maven-jdk21-temurin = super.temurin-bin-21;
+
   maven-jdk20-temurin = super.temurin-bin-20;
 
   maven-jdk19-temurin = super.temurin-bin-19;
